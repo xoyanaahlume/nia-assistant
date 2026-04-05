@@ -1,0 +1,20 @@
+{
+  "name": "Nia — Digital Executive Assistant",
+  "short_name": "Nia",
+  "description": "Your AI-powered digital executive assistant",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050508",
+  "theme_color": "#050508",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "en"
+}

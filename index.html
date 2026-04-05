@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#050508"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Nia"/>
+<title>Nia — Digital Executive Assistant</title>
+<link rel="manifest" href="manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Tenor+Sans&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+
+<style>
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;background:#000}
+body{
+  min-height:100vh;min-height:-webkit-fill-available;
+  background:#050508;color:#F0EDE8;
+  font-family:'Tenor Sans',sans-serif;
+  overflow:hidden;position:fixed;width:100%;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+/* ── Design tokens ── */
+:root{
+  --obsidian:#050508;
+  --surface:#0d0d12;
+  --surface2:#141418;
+  --gold:#C9A84C;
+  --gold-dim:#8A7030;
+  --gold-bright:#E8C96A;
+  --ivory:#F0EDE8;
+  --ash:#606070;
+  --ash2:#888898;
+  --green:#5AC48A;
+  --red:#C45A5A;
+}
+
+/* ── App Shell ── */
+#app{
+  display:flex;flex-direction:column;
+  height:100svh;height:100vh;
+  position:relative;overflow:hidden;
+}
+
+/* ── Grain overlay ── */
+#app::before{
+  content:'';position:absolute;inset:0;z-index:999;pointer-events:none;
+  opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── SETUP SCREEN ── */
+#setup-screen{
+  position:absolute;inset:0;z-index:500;
+  background:var(--obsidian);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:40px 32px;gap:28px;
+  transition:opacity .6s,transform .6s;
+}
+#setup-screen.hidden{opacity:0;pointer-events:none;transform:scale(.96)}
+
+.setup-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:52px;font-weight:300;
+  letter-spacing:18px;color:var(--ivory);
+  margin-bottom:4px;
+}
+.setup-sub{
+  font-family:'DM Mono',monospace;
+  font-size:10px;letter-spacing:3px;color:var(--ash);
+  text-transform:uppercase;margin-bottom:24px;
+}
+.setup-card{
+  width:100%;background:var(--surface);
+  border:1px solid #1e1e26;border-radius:16px;
+  padding:24px;
+}
+.setup-card-title{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:16px;
+}
+.setup-input{
+  width:100%;background:var(--surface2);
+  border:1px solid #2a2a35;border-radius:10px;
+  padding:14px 16px;color:var(--ivory);
+  font-family:'DM Mono',monospace;font-size:13px;
+  outline:none;transition:border-color .2s;
+}
+.setup-input:focus{border-color:var(--gold-dim)}
+.setup-input::placeholder{color:var(--ash)}
+.setup-hint{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:var(--ash);margin-top:8px;line-height:1.6;
+}
+.setup-hint a{color:var(--gold);text-decoration:none}
+.btn-primary{
+  width:100%;background:var(--gold);border:none;
+  border-radius:10px;padding:16px;
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:2px;font-weight:700;color:#000;
+  text-transform:uppercase;cursor:pointer;
+  transition:opacity .2s,transform .15s;
+}
+.btn-primary:active{opacity:.8;transform:scale(.98)}
+.setup-error{
+  font-family:'DM Mono',monospace;font-size:11px;
+  color:var(--red);text-align:center;
+  min-height:16px;
+}
+
+/* ── TIER SELECTOR ── */
+#tier-screen{
+  position:absolute;inset:0;z-index:400;
+  background:var(--obsidian);
+  display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top,32px) 24px 40px;
+  overflow-y:auto;gap:16px;
+  transition:opacity .6s;
+}
+#tier-screen.hidden{opacity:0;pointer-events:none}
+
+.tier-hd{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:2px;color:var(--ivory);margin-top:24px}
+.tier-sub{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-bottom:8px}
+.tier-card{
+  border-radius:16px;padding:24px;border:1px solid;
+  cursor:pointer;transition:box-shadow .3s,transform .15s;
+}
+.tier-card:active{transform:scale(.98)}
+.tier-premium{
+  background:var(--surface);border-color:var(--gold);
+  box-shadow:0 0 40px rgba(201,168,76,.12);
+}
+.tier-generic{background:var(--surface2);border-color:#1e1e26}
+.tier-badge-row{display:flex;justify-content:space-between;margin-bottom:12px}
+.badge-rec{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+.badge-trial{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--green);text-transform:uppercase}
+.tier-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--ivory);margin-bottom:4px}
+.tier-price{font-size:36px;font-weight:700;color:var(--ivory);margin-bottom:18px}
+.tier-price span{font-size:16px;font-weight:400;color:var(--ash)}
+.tier-features{display:flex;flex-direction:column;gap:10px}
+.tf{display:flex;align-items:flex-start;gap:10px}
+.tf-check{color:var(--green);font-size:13px;margin-top:1px;min-width:16px}
+.tf-x{color:#333;font-size:18px;margin-top:-2px;min-width:16px;line-height:1}
+.tf-text{font-family:'Tenor Sans',sans-serif;font-size:13px;color:var(--ivory);line-height:1.4}
+.tf-text.dim{color:var(--ash)}
+
+/* ── MAIN SCREEN ── */
+#main-screen{
+  display:flex;flex-direction:column;height:100%;
+  opacity:0;transition:opacity .8s;
+}
+#main-screen.visible{opacity:1}
+
+/* Header */
+.header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 28px 0;flex-shrink:0;
+}
+.wordmark{
+  font-family:'Cormorant Garamond',serif;
+  font-size:24px;font-weight:300;letter-spacing:10px;color:var(--ivory);
+}
+.tier-info{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.tier-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);align-self:flex-end;box-shadow:0 0 8px var(--green);animation:blink 3s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Orb Zone */
+.orb-zone{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  position:relative;gap:0;
+}
+
+.orb-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+
+.ring{position:absolute;border-radius:50%;border:1px solid var(--gold-dim);transition:border-color .4s}
+.r1{width:184px;height:184px;opacity:.35;animation:bp1 4s ease-in-out infinite}
+.r2{width:158px;height:158px;opacity:.5;animation:bp2 4s ease-in-out infinite .5s}
+.r3{width:132px;height:132px;opacity:.7;border-color:var(--gold);animation:bp3 4s ease-in-out infinite 1s}
+
+@keyframes bp1{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes bp2{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes bp3{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+
+.orb-glow{
+  position:absolute;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 70%);
+  animation:glow 4s ease-in-out infinite;
+}
+@keyframes glow{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.15);opacity:1}}
+
+.orb-core{
+  width:104px;height:104px;border-radius:52px;
+  background:var(--surface);
+  border:1.5px solid var(--gold-dim);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:border-color .3s,box-shadow .3s;
+  box-shadow:0 0 30px rgba(201,168,76,.1);
+  -webkit-user-select:none;user-select:none;
+  position:relative;z-index:2;
+}
+.orb-core:active{transform:scale(.96)}
+.orb-dot{
+  width:34px;height:34px;border-radius:17px;
+  background:radial-gradient(circle at 38% 35%,var(--gold-bright),var(--gold));
+  box-shadow:0 0 20px rgba(201,168,76,.5);
+  transition:transform .3s;
+}
+
+/* Listening state */
+.orb-core.listening{
+  border-color:var(--gold-bright);
+  box-shadow:0 0 50px rgba(201,168,76,.3);
+  animation:core-pulse .6s ease-in-out infinite alternate;
+}
+@keyframes core-pulse{from{transform:scale(1)}to{transform:scale(1.04)}}
+.orb-core.listening .orb-dot{animation:dot-pulse .6s ease-in-out infinite alternate}
+@keyframes dot-pulse{from{transform:scale(1)}to{transform:scale(1.15)}}
+
+.ring.listening{border-color:var(--gold)!important}
+.r1.listening{animation:rl1 1.6s ease-in-out infinite!important}
+.r2.listening{animation:rl2 1.6s ease-in-out infinite .25s!important}
+.r3.listening{animation:rl3 1.6s ease-in-out infinite .5s!important}
+@keyframes rl1{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.25);opacity:.05}}
+@keyframes rl2{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.2);opacity:.08}}
+@keyframes rl3{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.15);opacity:.12}}
+
+/* Waveform */
+.waveform{
+  display:flex;align-items:center;gap:4px;height:32px;
+  opacity:0;transition:opacity .3s;margin-top:16px;
+}
+.waveform.active{opacity:1}
+.wb{
+  width:3px;border-radius:3px;background:var(--gold);
+  transform-origin:bottom;
+  animation:wave .7s ease-in-out infinite alternate;
+}
+.wb:nth-child(1){height:8px;animation-delay:0s}
+.wb:nth-child(2){height:20px;animation-delay:.08s}
+.wb:nth-child(3){height:28px;animation-delay:.16s}
+.wb:nth-child(4){height:14px;animation-delay:.04s}
+.wb:nth-child(5){height:24px;animation-delay:.12s}
+.wb:nth-child(6){height:10px;animation-delay:.2s}
+.wb:nth-child(7){height:30px;animation-delay:.06s}
+.wb:nth-child(8){height:18px;animation-delay:.14s}
+.wb:nth-child(9){height:22px;animation-delay:.1s}
+.wb:nth-child(10){height:8px;animation-delay:.18s}
+.wb:nth-child(11){height:26px;animation-delay:.02s}
+.wb:nth-child(12){height:12px;animation-delay:.22s}
+@keyframes wave{from{transform:scaleY(.2);opacity:.3}to{transform:scaleY(1);opacity:1}}
+
+.state-label{
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:3px;text-transform:uppercase;
+  color:var(--ash);transition:color .4s;
+  margin-top:14px;text-align:center;padding:0 20px;
+  min-height:14px;
+}
+.state-label.active{color:var(--gold)}
+.state-label.speaking{color:var(--ivory)}
+.state-label.confirm{color:var(--gold-bright)}
+
+/* Transcript */
+.transcript{
+  flex-shrink:0;max-height:38vh;
+  overflow-y:auto;padding:0 20px 8px;
+  display:flex;flex-direction:column;gap:10px;
+  scrollbar-width:none;
+}
+.transcript::-webkit-scrollbar{display:none}
+
+.bubble{border-radius:14px;padding:12px 16px;animation:bi .3s cubic-bezier(.16,1,.3,1)}
+@keyframes bi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.bubble-user{
+  align-self:flex-end;max-width:82%;
+  background:var(--surface2);border:1px solid #1e1e26;
+  border-bottom-right-radius:3px;
+}
+.bubble-nia{
+  align-self:flex-start;max-width:82%;
+  background:rgba(201,168,76,.06);
+  border:1px solid rgba(201,168,76,.15);
+  border-bottom-left-radius:3px;
+}
+.bubble-denial{border-color:rgba(196,90,90,.3);background:rgba(196,90,90,.05)}
+.bubble-speaker{
+  font-family:'DM Mono',monospace;font-size:8px;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--ash);margin-bottom:5px;
+}
+.bubble-nia .bubble-speaker{color:var(--gold-dim)}
+.bubble-text{
+  font-family:'Tenor Sans',sans-serif;font-size:14px;
+  color:var(--ivory);line-height:1.55;
+}
+.typing-bubble{
+  align-self:flex-start;
+  background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);
+  border-radius:14px;border-bottom-left-radius:3px;
+  padding:14px 18px;display:flex;gap:6px;align-items:center;
+  animation:bi .3s cubic-bezier(.16,1,.3,1);
+}
+.td{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--gold-dim);
+  animation:tdot 1.2s ease-in-out infinite;
+}
+.td:nth-child(2){animation-delay:.2s}
+.td:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+/* Upsell */
+.upsell-card{
+  margin:0 20px 8px;padding:16px 18px;
+  background:rgba(201,168,76,.07);
+  border:1px solid rgba(201,168,76,.25);
+  border-radius:14px;animation:bi .35s cubic-bezier(.16,1,.3,1);
+}
+.upsell-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.upsell-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+.upsell-close{background:none;border:none;color:var(--ash);font-size:16px;cursor:pointer;padding:0 2px}
+.upsell-body{font-family:'Tenor Sans',sans-serif;font-size:13px;color:var(--ivory);line-height:1.5;margin-bottom:12px}
+.upsell-hl{color:var(--gold-bright)}
+.upsell-btn{
+  width:100%;background:var(--gold);border:none;border-radius:8px;
+  padding:12px;font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;font-weight:700;color:#000;
+  text-transform:uppercase;cursor:pointer;
+}
+
+/* Confirm row */
+.confirm-row{
+  display:flex;gap:10px;padding:8px 20px;
+  animation:bi .3s cubic-bezier(.16,1,.3,1);
+}
+.btn-cancel{
+  flex:1;padding:14px;border-radius:10px;
+  border:1px solid #2a2a35;background:transparent;
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:1px;color:var(--ash);cursor:pointer;
+}
+.btn-proceed{
+  flex:2;padding:14px;border-radius:10px;
+  background:var(--gold);border:none;
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:1px;font-weight:700;color:#000;cursor:pointer;
+}
+
+/* Controls */
+.controls{
+  flex-shrink:0;padding:10px 24px 20px;
+  background:linear-gradient(to top,var(--obsidian) 60%,transparent);
+}
+.quick-row{
+  display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;
+  scrollbar-width:none;margin-bottom:14px;
+}
+.quick-row::-webkit-scrollbar{display:none}
+.chip{
+  flex-shrink:0;background:var(--surface2);
+  border:1px solid #1e1e26;border-radius:20px;
+  padding:8px 16px;
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:1px;color:var(--ash2);cursor:pointer;
+  transition:border-color .2s,color .2s;white-space:nowrap;
+}
+.chip:active{border-color:var(--gold-dim);color:var(--gold)}
+.mic-row{display:flex;align-items:center;justify-content:center;gap:20px}
+.side-btn{
+  width:46px;height:46px;border-radius:23px;
+  background:var(--surface2);border:1px solid #1e1e26;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:18px;color:var(--ash2);
+  transition:border-color .2s,color .2s;
+}
+.side-btn:active{border-color:#333;color:var(--ivory)}
+.mic-btn{
+  width:68px;height:68px;border-radius:34px;
+  background:var(--surface);border:1.5px solid var(--gold-dim);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:24px;transition:all .3s;
+  box-shadow:0 0 0 0 rgba(201,168,76,0);
+  -webkit-user-select:none;user-select:none;
+}
+.mic-btn.active{
+  border-color:var(--gold-bright);
+  background:rgba(201,168,76,.08);
+  box-shadow:0 0 0 10px rgba(201,168,76,.08),0 0 40px rgba(201,168,76,.25);
+  animation:mic-ring 1.5s ease-in-out infinite;
+}
+@keyframes mic-ring{0%,100%{box-shadow:0 0 0 10px rgba(201,168,76,.08),0 0 40px rgba(201,168,76,.25)}50%{box-shadow:0 0 0 18px rgba(201,168,76,0),0 0 40px rgba(201,168,76,.25)}}
+
+.divider{height:1px;background:linear-gradient(to right,transparent,#1e1e26,transparent);margin:0 32px 12px}
+
+/* Offline banner */
+.offline-banner{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(196,90,90,.15);border-top:1px solid rgba(196,90,90,.3);
+  padding:10px 20px;text-align:center;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;
+  color:var(--red);z-index:100;display:none;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ SETUP SCREEN ═══════════════════════════════════════════════ -->
+  <div id="setup-screen">
+    <div>
+      <div class="setup-logo">NIA</div>
+      <div class="setup-sub">Digital Executive Assistant</div>
+    </div>
+
+    <div class="setup-card">
+      <div class="setup-card-title">Gemini API Key — Required</div>
+      <input class="setup-input" id="api-key-input" type="password"
+             placeholder="Paste your free API key here"
+             autocomplete="off" autocorrect="off" spellcheck="false"/>
+      <div class="setup-hint">
+        Free key → <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a><br/>
+        Click "Get API key" → "Create API key" → Copy it here.<br/>
+        No credit card. No cost. Takes 60 seconds.
+      </div>
+    </div>
+
+    <div class="setup-error" id="setup-error"></div>
+    <button class="btn-primary" id="setup-btn" onclick="handleSetup()">Activate Nia</button>
+  </div>
+
+  <!-- ═══ TIER SCREEN ════════════════════════════════════════════════ -->
+  <div id="tier-screen" class="hidden">
+    <div class="tier-hd">Choose Your Plan</div>
+    <div class="tier-sub">Select how you work with Nia</div>
+
+    <div class="tier-card tier-premium" onclick="selectTier('premium')">
+      <div class="tier-badge-row">
+        <span class="badge-rec">⭐ Recommended</span>
+        <span class="badge-trial">7-Day Free Trial</span>
+      </div>
+      <div class="tier-name">Nia Premium</div>
+      <div class="tier-price">$100<span>/month</span></div>
+      <div class="tier-features">
+        <div class="tf"><span class="tf-check">✓</span><span class="tf-text">24/7 availability — always on</span></div>
+        <div class="tf"><span class="tf-check">✓</span><span class="tf-text">All languages, auto-detected</span></div>
+        <div class="tf"><span class="tf-check">✓</span><span class="tf-text">Deep device &amp; app control</span></div>
+        <div class="tf"><span class="tf-check">✓</span><span class="tf-text">Complex multi-step workflows</span></div>
+        <div class="tf"><span class="tf-check">✓</span><span class="tf-text">7-day free trial — no commitment</span></div>
+      </div>
+    </div>
+
+    <div class="tier-card tier-generic" onclick="selectTier('generic')">
+      <div class="tier-name">Nia Generic</div>
+      <div class="tier-price">$20<span>/month</span></div>
+      <div class="tier-features">
+        <div class="tf"><span class="tf-x">–</span><span class="tf-text dim">Mon–Fri, 9am–9pm only</span></div>
+        <div class="tf"><span class="tf-x">–</span><span class="tf-text dim">English only</span></div>
+        <div class="tf"><span class="tf-x">–</span><span class="tf-text dim">Basic interactions only</span></div>
+        <div class="tf"><span class="tf-x">–</span><span class="tf-text dim">No free trial</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN SCREEN ════════════════════════════════════════════════ -->
+  <div id="main-screen">
+    <div class="header">
+      <div class="wordmark">NIA</div>
+      <div class="tier-info">
+        <div class="tier-tag" id="tier-display">Premium</div>
+        <div class="status-dot"></div>
+      </div>
+    </div>
+
+    <div class="orb-zone">
+      <div class="orb-wrap">
+        <div class="orb-glow"></div>
+        <div class="ring r1" id="r1"></div>
+        <div class="ring r2" id="r2"></div>
+        <div class="ring r3" id="r3"></div>
+        <div class="orb-core" id="orb-core" onclick="toggleListen()">
+          <div class="orb-dot"></div>
+        </div>
+      </div>
+
+      <div class="waveform" id="waveform">
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+      </div>
+
+      <div class="state-label" id="state-label">Tap the orb to speak</div>
+    </div>
+
+    <div class="transcript" id="transcript"></div>
+    <div id="upsell-slot"></div>
+    <div id="confirm-slot"></div>
+
+    <div class="divider"></div>
+
+    <div class="controls">
+      <div class="quick-row" id="quick-row">
+        <div class="chip" onclick="quickCmd('Schedule a meeting for me')">Schedule</div>
+        <div class="chip" onclick="quickCmd('Help me draft an email')">Email</div>
+        <div class="chip" onclick="quickCmd('I need to find a file or document')">Find file</div>
+        <div class="chip" onclick="quickCmd('Remind me about my tasks today')">Tasks</div>
+        <div class="chip" onclick="quickCmd('What should I focus on right now?')">Focus</div>
+      </div>
+      <div class="mic-row">
+        <div class="side-btn" id="history-btn" onclick="toggleHistory()" title="History">☰</div>
+        <div class="mic-btn" id="mic-btn" onclick="toggleListen()">🎙</div>
+        <div class="side-btn" onclick="clearAll()" title="Clear">✕</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="offline-banner" id="offline-banner">
+    No internet connection — Nia needs connectivity to process commands
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// NIA — Core Application Logic
+// Zero-cost stack: Web Speech API + Google Gemini free API
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── State ────────────────────────────────────────────────────────────────────
+const S = {
+  apiKey:        '',
+  tier:          'generic',   // 'generic' | 'premium'
+  trialStart:    null,
+  listening:     false,
+  processing:    false,
+  awaitConfirm:  false,
+  pendingAction: null,
+  messages:      [],          // full conversation history for Gemini
+};
+
+// ── Tier Config ──────────────────────────────────────────────────────────────
+const TIER = {
+  generic: {
+    allowedDays:  [1,2,3,4,5],   // Mon–Fri
+    startHour:    9,
+    endHour:      21,
+    languages:    ['en'],
+    label:        'Generic',
+  },
+  premium: {
+    allowedDays:  [0,1,2,3,4,5,6],
+    startHour:    0,
+    endHour:      24,
+    languages:    'ALL',
+    label:        'Premium',
+  },
+};
+
+// ── Speech Objects ────────────────────────────────────────────────────────────
+let recognition = null;
+let synth = window.speechSynthesis;
+let niasVoice = null;
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  loadFromStorage();
+  initSpeech();
+  checkOnline();
+  window.addEventListener('online',  () => { document.getElementById('offline-banner').style.display='none'; });
+  window.addEventListener('offline', () => { document.getElementById('offline-banner').style.display='block'; });
+});
+
+function loadFromStorage() {
+  const saved = localStorage.getItem('nia_config');
+  if (saved) {
+    try {
+      const cfg = JSON.parse(saved);
+      S.apiKey     = cfg.apiKey     || '';
+      S.tier       = cfg.tier       || 'generic';
+      S.trialStart = cfg.trialStart || null;
+    } catch(e) {}
+  }
+  if (S.apiKey) {
+    // Already configured — go straight to main
+    showMain();
+  }
+}
+
+function saveToStorage() {
+  localStorage.setItem('nia_config', JSON.stringify({
+    apiKey:     S.apiKey,
+    tier:       S.tier,
+    trialStart: S.trialStart,
+  }));
+}
+
+// ── Speech Init ───────────────────────────────────────────────────────────────
+function initSpeech() {
+  // Load voices (some browsers load async)
+  if (synth.getVoices().length > 0) {
+    pickVoice();
+  } else {
+    synth.addEventListener('voiceschanged', pickVoice, { once: true });
+  }
+
+  // STT setup
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous      = false;
+    recognition.interimResults  = false;
+    recognition.lang            = 'en-US';
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      if (text) handleUserInput(text);
+    };
+    recognition.onerror = (e) => {
+      if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        setListening(false);
+        setStateLabel('Tap to speak');
+      }
+    };
+    recognition.onend = () => {
+      if (S.listening && !S.processing) {
+        setListening(false);
+      }
+    };
+  }
+}
+
+function pickVoice() {
+  const voices = synth.getVoices();
+  // Prefer female English voices
+  const preferred = [
+    'Google UK English Female',
+    'Samantha',
+    'Victoria',
+    'Karen',
+    'Moira',
+    'Tessa',
+    'Google US English',
+  ];
+  for (const name of preferred) {
+    const v = voices.find(v => v.name === name);
+    if (v) { niasVoice = v; return; }
+  }
+  // Fallback: any female-sounding voice
+  niasVoice = voices.find(v =>
+    v.name.toLowerCase().includes('female') ||
+    v.name.toLowerCase().includes('woman') ||
+    v.name === 'Google UK English Female'
+  ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+}
+
+// ── Setup Flow ────────────────────────────────────────────────────────────────
+async function handleSetup() {
+  const key = document.getElementById('api-key-input').value.trim();
+  const errEl = document.getElementById('setup-error');
+  const btn = document.getElementById('setup-btn');
+
+  if (!key) {
+    errEl.textContent = 'Please enter your API key.';
+    return;
+  }
+
+  btn.textContent = 'Verifying...';
+  btn.disabled = true;
+  errEl.textContent = '';
+
+  // Test the key with a minimal request
+  const ok = await testApiKey(key);
+  if (!ok) {
+    errEl.textContent = 'Invalid key or no internet. Try again.';
+    btn.textContent = 'Activate Nia';
+    btn.disabled = false;
+    return;
+  }
+
+  S.apiKey = key;
+  // Show tier selection
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('tier-screen').classList.remove('hidden');
+}
+
+async function testApiKey(key) {
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{ parts:[{ text:'Hi' }] }] }),
+      }
+    );
+    return res.ok;
+  } catch(e) {
+    return false;
+  }
+}
+
+function selectTier(tier) {
+  S.tier = tier;
+  if (tier === 'premium') S.trialStart = Date.now();
+  saveToStorage();
+  document.getElementById('tier-screen').classList.add('hidden');
+  showMain();
+  // Nia introduces herself after a brief pause
+  setTimeout(() => {
+    const greeting = tier === 'premium'
+      ? "Hello. I'm Nia. Your 7-day Premium trial is now active. I'm fully at your service — around the clock. What's first?"
+      : "Hello. I'm Nia. Your Generic plan is active. I'm available Monday through Friday, nine to nine. What do you need?";
+    niaTalk(greeting);
+  }, 600);
+}
+
+// ── Main Screen ───────────────────────────────────────────────────────────────
+function showMain() {
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('tier-screen').classList.add('hidden');
+  const ms = document.getElementById('main-screen');
+  ms.classList.add('visible');
+  document.getElementById('tier-display').textContent = TIER[S.tier]?.label ?? 'Generic';
+}
+
+// ── Tier Gate ─────────────────────────────────────────────────────────────────
+function checkGate(input) {
+  const cfg = TIER[S.tier];
+  if (!cfg) return { allowed: false, reason: 'No subscription found.' };
+
+  // Premium: check trial (7 days)
+  if (S.tier === 'premium' && S.trialStart) {
+    const trialMs = 7 * 24 * 60 * 60 * 1000;
+    if (Date.now() - S.trialStart > trialMs) {
+      return {
+        allowed: false,
+        isDenial: true,
+        reason: "Your 7-day Nia Premium trial has ended. Subscribe to keep full access.",
+      };
+    }
+  }
+
+  // Generic: day check
+  const now = new Date();
+  const day  = now.getDay();
+  const hour = now.getHours();
+
+  if (!cfg.allowedDays.includes(day)) {
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    return {
+      allowed: false,
+      isDenial: true,
+      reason: `It's ${days[day]} — outside your Generic plan's Monday–Friday window. I'm back Monday at 9:00. Nia Premium is available right now, 24/7.`,
+    };
+  }
+
+  if (hour < cfg.startHour || hour >= cfg.endHour) {
+    return {
+      allowed: false,
+      isDenial: true,
+      reason: `It's ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} — outside your Generic plan's service hours (9am–9pm). Nia Premium never sleeps.`,
+    };
+  }
+
+  return { allowed: true };
+}
+
+// ── Voice Input ───────────────────────────────────────────────────────────────
+function toggleListen() {
+  if (S.processing) return;
+  if (S.awaitConfirm) return;
+
+  if (S.listening) {
+    stopListening();
+  } else {
+    startListening();
+  }
+}
+
+function startListening() {
+  if (!recognition) {
+    // Fallback: prompt text input
+    const txt = prompt('Type your command:');
+    if (txt) handleUserInput(txt);
+    return;
+  }
+  try {
+    synth.cancel(); // Stop any TTS
+    recognition.start();
+    setListening(true);
+  } catch(e) {
+    // Already started — ignore
+  }
+}
+
+function stopListening() {
+  if (recognition) {
+    try { recognition.stop(); } catch(e) {}
+  }
+  setListening(false);
+}
+
+function setListening(val) {
+  S.listening = val;
+  const orb   = document.getElementById('orb-core');
+  const mic   = document.getElementById('mic-btn');
+  const wave  = document.getElementById('waveform');
+  const rings = ['r1','r2','r3'];
+
+  if (val) {
+    orb.classList.add('listening');
+    mic.classList.add('active');
+    mic.textContent = '⏹';
+    wave.classList.add('active');
+    rings.forEach(r => document.getElementById(r).classList.add('listening'));
+    setStateLabel('Listening...', 'active');
+  } else {
+    orb.classList.remove('listening');
+    mic.classList.remove('active');
+    mic.textContent = '🎙';
+    wave.classList.remove('active');
+    rings.forEach(r => document.getElementById(r).classList.remove('listening'));
+    setStateLabel(S.processing ? 'Processing...' : 'Tap to speak',
+                  S.processing ? 'active' : '');
+  }
+}
+
+// ── Command Processing ────────────────────────────────────────────────────────
+async function handleUserInput(text) {
+  stopListening();
+  S.processing = true;
+
+  setStateLabel('Processing...', 'active');
+  addBubble('user', text);
+
+  // Gate check
+  const gate = checkGate(text);
+  if (!gate.allowed) {
+    addBubble('nia', gate.reason, gate.isDenial ? 'denial' : '');
+    niaTalk(gate.reason);
+    if (gate.isDenial) showUpsell();
+    S.processing = false;
+    setStateLabel('Tap to speak');
+    return;
+  }
+
+  // Show typing indicator
+  const typingId = showTyping();
+
+  // Build full conversation for Gemini
+  S.messages.push({ role: 'user', parts: [{ text }] });
+
+  let reply = '';
+  try {
+    reply = await askGemini();
+  } catch(e) {
+    reply = "I had trouble processing that. Please check your connection and try again.";
+  }
+
+  removeTyping(typingId);
+  S.messages.push({ role: 'model', parts: [{ text: reply }] });
+
+  // Check if reply needs confirmation
+  const needsConfirm = detectConfirmationNeeded(reply);
+  if (needsConfirm) {
+    addBubble('nia', reply);
+    niaTalk(reply);
+    showConfirmation(text, reply);
+  } else {
+    addBubble('nia', reply);
+    niaTalk(reply);
+  }
+
+  S.processing = false;
+  setStateLabel('Tap to speak');
+}
+
+// ── Gemini API ────────────────────────────────────────────────────────────────
+async function askGemini() {
+  const systemPrompt = buildSystemPrompt();
+
+  const body = {
+    system_instruction: {
+      parts: [{ text: systemPrompt }]
+    },
+    contents: S.messages,
+    generationConfig: {
+      maxOutputTokens: 300,
+      temperature: 0.7,
+    },
+  };
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${S.apiKey}`,
+    {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "I'm not sure how to handle that. Could you rephrase?";
+}
+
+function buildSystemPrompt() {
+  const now = new Date();
+  const tier = TIER[S.tier];
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  return `You are Nia, a world-class digital executive assistant. Your personality:
+- Poised, ultra-competent, direct. Never chatty.
+- You respond in SHORT sentences. 1-3 sentences maximum unless giving a detailed plan.
+- You are warm but efficient. No filler words like "Certainly!" or "Of course!".
+- If a command is ambiguous, ask ONE clarifying question only.
+- For high-risk actions (sending messages, payments, deleting), always confirm with the user before proceeding. End your response with "— shall I proceed?"
+- You have access to help with: scheduling, email drafting, file organization advice, task management, research, and general executive assistance.
+- You cannot directly control device apps (this is a web app), but you can draft content, plan steps, and guide the user through any task.
+
+Current context:
+- Date/Time: ${now.toLocaleString()}
+- Day: ${dayNames[now.getDay()]}
+- User tier: ${S.tier.toUpperCase()}
+- Tier limits: ${S.tier === 'premium' ? '24/7, all languages, full depth' : 'Mon–Fri 9am–9pm, English only, surface tasks'}
+
+Keep responses concise. Lead with the action or answer. Never start with the user's name.`;
+}
+
+function detectConfirmationNeeded(reply) {
+  return /shall I proceed|want me to proceed|confirm|should I go ahead/i.test(reply);
+}
+
+// ── Quick Commands ────────────────────────────────────────────────────────────
+function quickCmd(text) {
+  if (S.processing || S.awaitConfirm) return;
+  handleUserInput(text);
+}
+
+// ── Confirmation Flow ─────────────────────────────────────────────────────────
+function showConfirmation(originalCmd, niaSummary) {
+  S.awaitConfirm = true;
+  S.pendingAction = originalCmd;
+  const slot = document.getElementById('confirm-slot');
+  slot.innerHTML = `
+    <div class="confirm-row">
+      <button class="btn-cancel" onclick="handleConfirm(false)">Cancel</button>
+      <button class="btn-proceed" onclick="handleConfirm(true)">Proceed</button>
+    </div>
+  `;
+}
+
+async function handleConfirm(yes) {
+  document.getElementById('confirm-slot').innerHTML = '';
+  S.awaitConfirm = false;
+
+  if (yes) {
+    addBubble('user', 'Yes, proceed.');
+    const typingId = showTyping();
+    S.messages.push({ role:'user', parts:[{ text:'Yes, proceed.' }] });
+    let reply = '';
+    try {
+      reply = await askGemini();
+    } catch(e) {
+      reply = "I ran into an issue. Please try again.";
+    }
+    removeTyping(typingId);
+    S.messages.push({ role:'model', parts:[{ text:reply }] });
+    addBubble('nia', reply);
+    niaTalk(reply);
+  } else {
+    addBubble('user', 'No, cancel.');
+    const r = "Understood. Command cancelled. What else can I do for you?";
+    addBubble('nia', r);
+    niaTalk(r);
+    S.messages.push({ role:'user',  parts:[{ text:'No, cancel.' }] });
+    S.messages.push({ role:'model', parts:[{ text:r }] });
+  }
+  S.pendingAction = null;
+}
+
+// ── Upsell ────────────────────────────────────────────────────────────────────
+function showUpsell() {
+  const slot = document.getElementById('upsell-slot');
+  if (slot.innerHTML) return;
+  slot.innerHTML = `
+    <div class="upsell-card">
+      <div class="upsell-top">
+        <span class="upsell-label">Upgrade Available</span>
+        <button class="upsell-close" onclick="document.getElementById('upsell-slot').innerHTML=''">✕</button>
+      </div>
+      <div class="upsell-body">
+        Nia Premium — 24/7, every language, full depth.
+        <span class="upsell-hl">7-day free trial included.</span>
+      </div>
+      <button class="upsell-btn" onclick="upgradeToPremium()">Start Free Trial</button>
+    </div>
+  `;
+}
+
+function upgradeToPremium() {
+  S.tier = 'premium';
+  S.trialStart = Date.now();
+  saveToStorage();
+  document.getElementById('tier-display').textContent = 'Premium';
+  document.getElementById('upsell-slot').innerHTML = '';
+  const msg = "Premium activated. You now have 24/7 access, all languages, and full depth. What do you need?";
+  addBubble('nia', msg);
+  niaTalk(msg);
+}
+
+// ── TTS ───────────────────────────────────────────────────────────────────────
+function niaTalk(text) {
+  synth.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  if (niasVoice) utt.voice = niasVoice;
+  utt.rate  = 0.92;
+  utt.pitch = 1.05;
+  utt.volume = 1;
+  setStateLabel('Speaking...', 'speaking');
+  utt.onend = () => {
+    if (!S.listening && !S.processing) setStateLabel('Tap to speak');
+  };
+  synth.speak(utt);
+}
+
+// ── UI Helpers ────────────────────────────────────────────────────────────────
+function addBubble(speaker, text, type='') {
+  const t = document.getElementById('transcript');
+  const b = document.createElement('div');
+  b.className = `bubble bubble-${speaker}${type==='denial' ? ' bubble-denial' : ''}`;
+  b.innerHTML = `
+    <div class="bubble-speaker">${speaker==='user' ? 'You' : 'Nia'}</div>
+    <div class="bubble-text">${escHtml(text)}</div>
+  `;
+  t.appendChild(b);
+  t.scrollTop = t.scrollHeight;
+}
+
+function showTyping() {
+  const t = document.getElementById('transcript');
+  const id = 'typing-' + Date.now();
+  const el = document.createElement('div');
+  el.id = id;
+  el.className = 'typing-bubble';
+  el.innerHTML = '<div class="td"></div><div class="td"></div><div class="td"></div>';
+  t.appendChild(el);
+  t.scrollTop = t.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) {
+  document.getElementById(id)?.remove();
+}
+
+function setStateLabel(text, cls='') {
+  const el = document.getElementById('state-label');
+  el.textContent = text;
+  el.className = 'state-label' + (cls ? ' ' + cls : '');
+}
+
+function clearAll() {
+  document.getElementById('transcript').innerHTML = '';
+  document.getElementById('upsell-slot').innerHTML = '';
+  document.getElementById('confirm-slot').innerHTML = '';
+  S.messages = [];
+  S.awaitConfirm = false;
+  S.pendingAction = null;
+  synth.cancel();
+  setStateLabel('Tap to speak');
+}
+
+function toggleHistory() {
+  // Simple toggle — shows/hides old messages
+  const t = document.getElementById('transcript');
+  t.style.display = t.style.display === 'none' ? 'flex' : '';
+}
+
+function checkOnline() {
+  if (!navigator.onLine) document.getElementById('offline-banner').style.display = 'block';
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br/>');
+}
+</script>
+</body>
+</html>

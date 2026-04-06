@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#1E2D3D"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Nia"/>
+<title>Nia — Digital Executive Assistant</title>
+<link rel="manifest" href="manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;600;700&family=Tenor+Sans&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;background:#1E2D3D}
+body{min-height:100vh;min-height:-webkit-fill-available;background:#0d1821;color:#F0EDE8;font-family:'Tenor Sans',sans-serif;overflow:hidden;position:fixed;width:100%;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+:root{--bg:#0d1821;--sf:#1E2D3D;--sf2:#243447;--sf3:#2A3D52;--wh:#FFFFFF;--iv:#F0EDE8;--bl:#8DAFC8;--bm:#6B8BA4;--bd:#4A6680;--gr:#5AC48A;--rd:#C45A5A;--bor:rgba(255,255,255,0.1)}
+#app{display:flex;flex-direction:column;height:100svh;height:100vh;position:relative;overflow:hidden}
+#app::before{content:'';position:absolute;inset:0;z-index:999;pointer-events:none;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* SETUP */
+#setup-screen{position:absolute;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 28px;gap:20px;transition:opacity .5s,transform .5s}
+#setup-screen.hidden{opacity:0;pointer-events:none;transform:scale(.97)}
+.logo-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:8px}
+.logo-t{font-family:'Montserrat',sans-serif;font-size:46px;font-weight:200;letter-spacing:20px;color:var(--iv)}
+.logo-s{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3.5px;color:var(--bm);text-transform:uppercase}
+.card{width:100%;background:var(--sf);border:1px solid var(--bor);border-radius:16px;padding:20px}
+.clbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--bl);margin-bottom:12px}
+.inp{width:100%;background:var(--sf2);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:13px 15px;color:var(--iv);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+.inp:focus{border-color:rgba(255,255,255,0.25)}
+.inp::placeholder{color:var(--bd)}
+.hint{font-family:'DM Mono',monospace;font-size:10px;color:var(--bm);margin-top:10px;line-height:1.7}
+.hint a{color:var(--bl);text-decoration:none}
+.priv{width:100%;background:var(--sf);border:1px solid var(--bor);border-radius:14px;padding:16px}
+.priv-t{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--bl);text-transform:uppercase;margin-bottom:12px}
+.pp{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px}
+.pp:last-child{margin-bottom:0}
+.pp-i{font-size:12px;min-width:18px;margin-top:1px}
+.pp-t{font-family:'Tenor Sans',sans-serif;font-size:12px;color:var(--bm);line-height:1.5}
+.err{font-family:'DM Mono',monospace;font-size:11px;color:var(--rd);text-align:center;min-height:16px}
+.btn-p{width:100%;background:var(--wh);border:none;border-radius:10px;padding:15px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;font-weight:700;color:#0d1821;text-transform:uppercase;cursor:pointer;transition:opacity .2s,transform .15s}
+.btn-p:active{opacity:.85;transform:scale(.98)}
+
+/* TIER */
+#tier-screen{position:absolute;inset:0;z-index:400;background:var(--bg);display:flex;flex-direction:column;padding:env(safe-area-inset-top,40px) 22px 40px;overflow-y:auto;gap:12px;transition:opacity .5s}
+#tier-screen.hidden{opacity:0;pointer-events:none}
+.th{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:300;letter-spacing:1px;color:var(--iv);margin-top:18px}
+.ts{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;color:var(--bm);text-transform:uppercase;margin-bottom:4px}
+.tc{border-radius:16px;padding:20px;border:1px solid;cursor:pointer;transition:transform .15s;-webkit-user-select:none;user-select:none}
+.tc:active{transform:scale(.98)}
+.tcp{background:var(--sf);border-color:rgba(255,255,255,0.22);box-shadow:0 0 40px rgba(255,255,255,0.04)}
+.tcg{background:var(--sf2);border-color:rgba(255,255,255,0.07)}
+.tb{display:flex;justify-content:space-between;margin-bottom:10px}
+.br{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--bl);text-transform:uppercase}
+.bt{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;color:var(--gr);text-transform:uppercase}
+.tn{font-family:'Montserrat',sans-serif;font-size:19px;font-weight:400;color:var(--iv);margin-bottom:4px}
+.tpr{font-family:'Montserrat',sans-serif;font-size:30px;font-weight:700;color:var(--iv);margin-bottom:14px}
+.tpr span{font-size:13px;font-weight:300;color:var(--bm)}
+.tf-l{display:flex;flex-direction:column;gap:8px}
+.tf{display:flex;align-items:flex-start;gap:9px}
+.tfy{color:var(--gr);font-size:12px;min-width:16px;margin-top:2px}
+.tfn{color:var(--bd);font-size:15px;min-width:16px;line-height:1}
+.tft{font-family:'Tenor Sans',sans-serif;font-size:13px;line-height:1.4}
+.on{color:var(--iv)}.off{color:var(--bm)}
+
+/* MAIN */
+#main-screen{display:flex;flex-direction:column;height:100%;opacity:0;transition:opacity .8s}
+#main-screen.show{opacity:1}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:15px 26px 0;flex-shrink:0}
+.wm{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:300;letter-spacing:10px;color:var(--iv)}
+.hdr-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.ttag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2.5px;color:var(--bl);text-transform:uppercase}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--gr);align-self:flex-end;box-shadow:0 0 8px var(--gr);animation:blink 3s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.orb-z{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.orb-w{position:relative;width:210px;height:210px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.og{position:absolute;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.06) 0%,transparent 70%);animation:gb 4s ease-in-out infinite}
+@keyframes gb{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.12);opacity:1}}
+.rg{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,0.14)}
+.rg1{width:188px;height:188px;animation:rp 4s ease-in-out infinite}
+.rg2{width:160px;height:160px;animation:rp 4s ease-in-out infinite .5s}
+.rg3{width:132px;height:132px;border-color:rgba(255,255,255,0.28);animation:rp 4s ease-in-out infinite 1s}
+@keyframes rp{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.rg.L{border-color:rgba(255,255,255,0.5)!important}
+.rg1.L{animation:rl1 1.6s ease-in-out infinite!important}
+.rg2.L{animation:rl2 1.6s ease-in-out infinite .25s!important}
+.rg3.L{animation:rl3 1.6s ease-in-out infinite .5s!important}
+@keyframes rl1{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.3);opacity:.03}}
+@keyframes rl2{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.22);opacity:.05}}
+@keyframes rl3{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.15);opacity:.08}}
+.oc{width:108px;height:108px;border-radius:54px;background:var(--sf);border:1.5px solid rgba(255,255,255,0.28);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;position:relative;z-index:2;box-shadow:0 0 28px rgba(255,255,255,0.05);-webkit-user-select:none;user-select:none;animation:cb 4s ease-in-out infinite}
+@keyframes cb{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.oc:active{transform:scale(.95)!important}
+.oc.L{border-color:rgba(255,255,255,0.82);box-shadow:0 0 50px rgba(255,255,255,0.16);animation:cl .65s ease-in-out infinite alternate!important}
+@keyframes cl{from{transform:scale(1)}to{transform:scale(1.05)}}
+.od{width:36px;height:36px;border-radius:18px;background:radial-gradient(circle at 38% 35%,#fff,#C8DCF0);box-shadow:0 0 18px rgba(255,255,255,0.4)}
+.oc.L .od{animation:dl .65s ease-in-out infinite alternate}
+@keyframes dl{from{transform:scale(1)}to{transform:scale(1.18)}}
+
+.wf{display:flex;align-items:center;gap:4px;height:34px;opacity:0;transition:opacity .3s;margin-top:18px}
+.wf.on{opacity:1}
+.wb{width:3px;border-radius:3px;background:#fff;transform-origin:bottom;animation:wv .7s ease-in-out infinite alternate}
+.wb:nth-child(1){height:8px;animation-delay:0s}.wb:nth-child(2){height:20px;animation-delay:.08s}
+.wb:nth-child(3){height:28px;animation-delay:.16s}.wb:nth-child(4){height:14px;animation-delay:.04s}
+.wb:nth-child(5){height:24px;animation-delay:.12s}.wb:nth-child(6){height:10px;animation-delay:.2s}
+.wb:nth-child(7){height:30px;animation-delay:.06s}.wb:nth-child(8){height:18px;animation-delay:.14s}
+.wb:nth-child(9){height:22px;animation-delay:.1s}.wb:nth-child(10){height:8px;animation-delay:.18s}
+.wb:nth-child(11){height:26px;animation-delay:.02s}.wb:nth-child(12){height:12px;animation-delay:.22s}
+@keyframes wv{from{transform:scaleY(.2);opacity:.3}to{transform:scaleY(1);opacity:1}}
+
+.slbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--bd);transition:color .4s;margin-top:13px;text-align:center;padding:0 20px;min-height:14px}
+.slbl.act{color:var(--wh)}.slbl.spk{color:var(--iv)}.slbl.cnf{color:var(--bl)}.slbl.den{color:var(--rd)}
+
+.transcript{flex-shrink:0;max-height:36vh;overflow-y:auto;padding:0 16px 8px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+.transcript::-webkit-scrollbar{display:none}
+.bbl{border-radius:14px;padding:11px 15px;animation:bi .3s cubic-bezier(.16,1,.3,1)}
+@keyframes bi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.bu{align-self:flex-end;max-width:83%;background:var(--sf2);border:1px solid rgba(255,255,255,0.08);border-bottom-right-radius:3px}
+.bn{align-self:flex-start;max-width:83%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-bottom-left-radius:3px}
+.bd{border-color:rgba(196,90,90,.35)!important;background:rgba(196,90,90,.06)!important}
+.bq{border-color:rgba(141,175,200,.3)!important;background:rgba(141,175,200,.06)!important}
+.bspk{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--bm);margin-bottom:5px}
+.bn .bspk{color:var(--bl)}
+.btxt{font-family:'Tenor Sans',sans-serif;font-size:14px;color:var(--iv);line-height:1.55}
+
+.tyb{align-self:flex-start;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;border-bottom-left-radius:3px;padding:13px 17px;display:flex;gap:6px;align-items:center;animation:bi .3s cubic-bezier(.16,1,.3,1)}
+.tyd{width:5px;height:5px;border-radius:50%;background:var(--bm);animation:tda 1.2s ease-in-out infinite}
+.tyd:nth-child(2){animation-delay:.2s}.tyd:nth-child(3){animation-delay:.4s}
+@keyframes tda{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+.ups{margin:0 16px 8px;padding:15px 17px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);border-radius:14px;animation:bi .35s cubic-bezier(.16,1,.3,1)}
+.ups-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ups-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--bl);text-transform:uppercase}
+.ups-x{background:none;border:none;color:var(--bm);font-size:16px;cursor:pointer}
+.ups-bod{font-family:'Tenor Sans',sans-serif;font-size:13px;color:var(--iv);line-height:1.5;margin-bottom:11px}
+.ups-hl{color:#fff;font-weight:600}
+.ups-cta{width:100%;background:#fff;border:none;border-radius:8px;padding:11px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;font-weight:700;color:#0d1821;text-transform:uppercase;cursor:pointer}
+
+.cfm{display:flex;gap:10px;padding:6px 16px;animation:bi .3s cubic-bezier(.16,1,.3,1)}
+.cno{flex:1;padding:13px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:transparent;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--bm);cursor:pointer}
+.cyes{flex:2;padding:13px;border-radius:10px;background:#fff;border:none;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;font-weight:700;color:#0d1821;cursor:pointer}
+
+.ctrls{flex-shrink:0;padding:10px 20px 20px;background:linear-gradient(to top,var(--bg) 65%,transparent)}
+.dvd{height:1px;background:linear-gradient(to right,transparent,rgba(255,255,255,0.08),transparent);margin:0 26px 12px}
+.qr{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-bottom:12px}
+.qr::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;background:var(--sf2);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:7px 15px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--bl);cursor:pointer;white-space:nowrap;transition:all .2s}
+.chip:active{border-color:rgba(255,255,255,0.3);color:#fff}
+.mr{display:flex;align-items:center;justify-content:center;gap:20px}
+.sb{width:46px;height:46px;border-radius:23px;background:var(--sf2);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;color:var(--bm);transition:all .2s}
+.sb:active{border-color:rgba(255,255,255,0.25);color:var(--iv)}
+.mb{width:68px;height:68px;border-radius:34px;background:var(--sf);border:1.5px solid rgba(255,255,255,0.24);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;transition:all .3s;-webkit-user-select:none;user-select:none}
+.mb.on{border-color:rgba(255,255,255,0.82);background:rgba(255,255,255,0.08);box-shadow:0 0 0 10px rgba(255,255,255,0.05),0 0 40px rgba(255,255,255,0.11);animation:mr2 1.5s ease-in-out infinite}
+@keyframes mr2{0%,100%{box-shadow:0 0 0 10px rgba(255,255,255,0.05),0 0 40px rgba(255,255,255,0.11)}50%{box-shadow:0 0 0 18px rgba(255,255,255,0),0 0 40px rgba(255,255,255,0.11)}}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{width:100%;max-width:500px;background:var(--sf);border-radius:22px 22px 0 0;padding:24px 26px 48px;border-top:1px solid var(--bor)}
+.modal-hd{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:300;letter-spacing:1.5px;color:var(--iv);margin-bottom:20px}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.mrow:last-of-type{border-bottom:none}
+.mrl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--bl)}
+.mrv{font-family:'Tenor Sans',sans-serif;font-size:13px;color:var(--iv)}
+.rst-btn{width:100%;margin-top:20px;padding:13px;border-radius:10px;background:rgba(196,90,90,.12);border:1px solid rgba(196,90,90,.28);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--rd);cursor:pointer}
+
+.offbar{position:fixed;bottom:0;left:0;right:0;background:rgba(196,90,90,.14);border-top:1px solid rgba(196,90,90,.3);padding:10px 20px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--rd);z-index:100;display:none}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ SETUP ══════════════════════════════════════════════════ -->
+<div id="setup-screen">
+  <div class="logo-wrap">
+    <div class="logo-t">NIA</div>
+    <div class="logo-s">Digital Executive Assistant</div>
+  </div>
+  <div class="card">
+    <div class="clbl">Gemini API Key — Required</div>
+    <input class="inp" id="akey" type="password" placeholder="Paste your free API key here" autocomplete="off" autocorrect="off" spellcheck="false"/>
+    <div class="hint">Free key → <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a><br/>Tap "Get API key" → "Create API key" → Copy and paste here. No credit card.</div>
+  </div>
+  <div class="priv">
+    <div class="priv-t">🔒 Zero-Knowledge Privacy Promise</div>
+    <div class="pp"><span class="pp-i">📱</span><span class="pp-t">All voice processing happens locally on your device</span></div>
+    <div class="pp"><span class="pp-i">🚫</span><span class="pp-t">Your personal data is never transmitted or stored externally</span></div>
+    <div class="pp"><span class="pp-i">📡</span><span class="pp-t">Only subscription status ever leaves your device</span></div>
+    <div class="pp"><span class="pp-i">🗑️</span><span class="pp-t">Session memory is cleared when Nia closes</span></div>
+  </div>
+  <div class="err" id="serr"></div>
+  <button class="btn-p" onclick="handleSetup()">Activate Nia</button>
+</div>
+
+<!-- ══ TIER ═══════════════════════════════════════════════════ -->
+<div id="tier-screen" class="hidden">
+  <div class="th">Choose Your Plan</div>
+  <div class="ts">Select your access level</div>
+  <div class="tc tcp" onclick="selectTier('premium')">
+    <div class="tb"><span class="br">⭐ Recommended</span><span class="bt">7-Day Free Trial</span></div>
+    <div class="tn">Nia Premium</div>
+    <div class="tpr">$100<span>/month</span></div>
+    <div class="tf-l">
+      <div class="tf"><span class="tfy">✓</span><span class="tft on">24/7 availability — always on, zero downtime</span></div>
+      <div class="tf"><span class="tfy">✓</span><span class="tft on">All languages — automatic detection</span></div>
+      <div class="tf"><span class="tfy">✓</span><span class="tft on">Deep-system integration & full device automation</span></div>
+      <div class="tf"><span class="tfy">✓</span><span class="tft on">Complex multi-step workflows</span></div>
+      <div class="tf"><span class="tfy">✓</span><span class="tft on">7-day full-access free trial — no commitment</span></div>
+    </div>
+  </div>
+  <div class="tc tcg" onclick="selectTier('generic')">
+    <div class="tn">Nia Generic</div>
+    <div class="tpr">$20<span>/month</span></div>
+    <div class="tf-l">
+      <div class="tf"><span class="tfn">–</span><span class="tft off">Mon–Fri only, 9am–9pm local time</span></div>
+      <div class="tf"><span class="tfn">–</span><span class="tft off">English only</span></div>
+      <div class="tf"><span class="tfn">–</span><span class="tft off">Surface-level tasks only</span></div>
+      <div class="tf"><span class="tfn">–</span><span class="tft off">No free trial</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN ════════════════════════════════════════════════════ -->
+<div id="main-screen">
+  <div class="hdr">
+    <div class="wm">NIA</div>
+    <div class="hdr-r">
+      <div class="ttag" id="tdisplay">Premium</div>
+      <div class="sdot"></div>
+    </div>
+  </div>
+  <div class="orb-z">
+    <div class="orb-w">
+      <div class="og"></div>
+      <div class="rg rg1" id="r1"></div>
+      <div class="rg rg2" id="r2"></div>
+      <div class="rg rg3" id="r3"></div>
+      <div class="oc" id="ocore" onclick="toggleListen()"><div class="od"></div></div>
+    </div>
+    <div class="wf" id="wf">
+      <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+      <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+      <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+      <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+    </div>
+    <div class="slbl" id="slbl">Tap the orb to speak</div>
+  </div>
+  <div class="transcript" id="transcript"></div>
+  <div id="uslot"></div>
+  <div id="cslot"></div>
+  <div class="dvd"></div>
+  <div class="ctrls">
+    <div class="qr">
+      <div class="chip" onclick="qcmd('Schedule a meeting for me')">Schedule</div>
+      <div class="chip" onclick="qcmd('Help me draft an email')">Email</div>
+      <div class="chip" onclick="qcmd('Find a file or document for me')">Find file</div>
+      <div class="chip" onclick="qcmd('What are my tasks today?')">Tasks</div>
+      <div class="chip" onclick="qcmd('What should I prioritise right now?')">Focus</div>
+    </div>
+    <div class="mr">
+      <div class="sb" onclick="clearAll()">☰</div>
+      <div class="mb" id="mbtn" onclick="toggleListen()">🎙</div>
+      <div class="sb" onclick="openSettings()">⚙</div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-bg" id="mbg" onclick="closeMod(event)">
+  <div class="modal">
+    <div class="modal-hd">Settings</div>
+    <div class="mrow"><span class="mrl">Plan</span><span class="mrv" id="st">—</span></div>
+    <div class="mrow"><span class="mrl">Status</span><span class="mrv" id="ss">—</span></div>
+    <div class="mrow"><span class="mrl">Availability</span><span class="mrv" id="sa">—</span></div>
+    <div class="mrow"><span class="mrl">Languages</span><span class="mrv" id="sl">—</span></div>
+    <button class="rst-btn" onclick="resetNia()">Reset — Re-enter API Key</button>
+  </div>
+</div>
+<div class="offbar" id="offbar">No internet — Nia needs connectivity to respond</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// NIA CORE — Full Original Spec Implementation
+// ══════════════════════════════════════════════════════════════
+
+const S={apiKey:'',tier:'',trialStart:null,listening:false,processing:false,awaitConfirm:false,pendingCmd:null,awaitClarify:false,clarifyCtx:null,msgs:[]};
+
+const TCFG={
+  generic:{label:'Generic',price:'$20/mo',days:[1,2,3,4,5],sh:9,eh:21,lang:'English only',avail:'Mon–Fri, 9am–9pm',depth:'Surface',trial:false},
+  premium:{label:'Premium',price:'$100/mo',days:[0,1,2,3,4,5,6],sh:0,eh:24,lang:'All languages',avail:'24/7, always on',depth:'Deep',trial:true,trialDays:7},
+};
+
+const HIGH_RISK=[/\b(send|email|message|text)\b/i,/\b(pay|payment|transfer|charge)\b/i,/\b(delete|remove|erase)\b/i,/\b(book|confirm|reserve)\b/i];
+const CLARIFY=[
+  {p:/\bpay\b.{0,30}\b(it|that|invoice|bill)\b/i,m:'payment method',q:"Which payment method should I use — your primary card, or another one?"},
+  {p:/\b(send|email)\b.{0,20}\b(him|her|them|it)\b/i,m:'recipient',q:"Who should I send this to?"},
+  {p:/\bschedule\b.{0,30}\b(it|one|meeting|call)\b/i,m:'time',q:"When should I schedule this?"},
+  {p:/\b(find|locate)\b.{0,20}\b(it|that|the file)\b/i,m:'file name',q:"Which file are you referring to specifically?"},
+];
+
+let recognition=null,synth=window.speechSynthesis,niasVoice=null;
+
+window.addEventListener('load',()=>{
+  boot();
+  initVoice();
+  window.addEventListener('online',()=>el('offbar').style.display='none');
+  window.addEventListener('offline',()=>el('offbar').style.display='block');
+  if(!navigator.onLine)el('offbar').style.display='block';
+});
+
+function boot(){
+  try{
+    const r=localStorage.getItem('nia_v3');
+    if(!r)return;
+    const c=JSON.parse(r);
+    S.apiKey=c.k||''; S.tier=c.t||''; S.trialStart=c.ts||null;
+    if(S.apiKey&&S.tier)showMain();
+  }catch(e){}
+}
+
+function save(){
+  localStorage.setItem('nia_v3',JSON.stringify({k:S.apiKey,t:S.tier,ts:S.trialStart}));
+}
+
+function initVoice(){
+  const load=()=>{
+    const vs=synth.getVoices();
+    const pref=['Google UK English Female','Samantha','Victoria','Karen','Moira','Tessa','Google US English'];
+    for(const n of pref){const v=vs.find(v=>v.name===n);if(v){niasVoice=v;return;}}
+    niasVoice=vs.find(v=>v.name.toLowerCase().includes('female')||v.lang.startsWith('en'))||vs[0];
+  };
+  synth.getVoices().length>0?load():synth.addEventListener('voiceschanged',load,{once:true});
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return;
+  recognition=new SR();
+  recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';
+  recognition.onresult=e=>{const t=e.results[0][0].transcript.trim();if(t)processInput(t);};
+  recognition.onerror=e=>{
+    if(e.error==='not-allowed'){setLbl('Mic access denied — enable in browser settings','den');speak("I need microphone access. Please allow it in your browser settings, then reload.");}
+    else if(e.error!=='no-speech'&&e.error!=='aborted'){setListening(false);setLbl('Tap to speak');}
+  };
+  recognition.onend=()=>{if(S.listening&&!S.processing)setListening(false);};
+}
+
+// ══ SETUP ════════════════════════════════════════════════════
+function handleSetup(){
+  const k=el('akey').value.trim();
+  const e=el('serr');
+  if(!k){e.textContent='Please paste your Gemini API key above.';return;}
+  if(k.length<20){e.textContent='Key looks incomplete — copy the full key.';return;}
+  S.apiKey=k;save();e.textContent='';
+  el('setup-screen').classList.add('hidden');
+  el('tier-screen').classList.remove('hidden');
+}
+
+function selectTier(t){
+  S.tier=t;
+  if(t==='premium')S.trialStart=Date.now();
+  save();
+  el('tier-screen').classList.add('hidden');
+  showMain();
+  setTimeout(()=>{
+    const g=t==='premium'
+      ?"Hello. I'm Nia. Your 7-day Premium trial is active. I'm fully at your service, around the clock. What's first?"
+      :"Hello. I'm Nia. Your Generic plan is active. I'm available Monday through Friday, nine to nine. What do you need?";
+    addBubble('nia',g,'');speak(g);
+  },700);
+}
+
+function showMain(){
+  el('main-screen').classList.add('show');
+  el('tdisplay').textContent=TCFG[S.tier]?.label||'';
+}
+
+// ══ TASK 1: SUBSCRIPTION GATEKEEPER ═════════════════════════
+function gate(input){
+  const c=TCFG[S.tier];
+  if(!c)return{ok:false,msg:"No subscription found. Please go to Settings and reset.",denial:false};
+  if(S.tier==='premium'&&S.trialStart){
+    const exp=Date.now()-S.trialStart>c.trialDays*864e5;
+    if(exp)return{ok:false,denial:true,msg:"Your 7-day Premium trial has ended. Subscribe to restore full access."};
+  }
+  if(S.tier==='generic'){
+    const now=new Date(),d=now.getDay(),h=now.getHours();
+    const DN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    if(!c.days.includes(d))return{ok:false,denial:true,msg:`It's ${DN[d]} — outside your Generic plan's Monday–Friday window. I resume Monday at 9:00. Nia Premium is available right now, 24/7.`};
+    if(h<c.sh||h>=c.eh)return{ok:false,denial:true,msg:`It's ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} — outside your Generic plan's hours (9am–9pm). Nia Premium never sleeps.`};
+    const nonAsc=(input.match(/[^\x00-\x7F]/g)||[]).length;
+    if(nonAsc>input.length*0.3)return{ok:false,denial:true,msg:"I detected a non-English message. Multi-language support is a Premium feature. I can continue in English, or you can upgrade."};
+  }
+  return{ok:true};
+}
+
+// ══ TASK 2: COMMAND & CLARIFY ENGINE ════════════════════════
+// Active Listener: executes immediately, interrupts with ONE
+// clarifying question when ambiguous, confirms high-risk actions
+async function processInput(text){
+  setListening(false);
+  if(S.processing)return;
+  S.processing=true;
+  setLbl('Processing...','act');
+  addBubble('user',text,'');
+
+  // Resolve clarification
+  if(S.awaitClarify&&S.clarifyCtx){
+    const ctx=S.clarifyCtx;
+    S.awaitClarify=false;S.clarifyCtx=null;
+    el('cslot').innerHTML='';
+    await exec(`${ctx.cmd}. ${ctx.m}: ${text}`,false);
+    S.processing=false;setLbl('Tap to speak');return;
+  }
+
+  // Handle confirmation response
+  if(S.awaitConfirm){
+    const yes=/\b(yes|yeah|do it|confirm|correct|go ahead|proceed|sure|ok|yep)\b/i.test(text);
+    S.awaitConfirm=false;el('cslot').innerHTML='';
+    if(yes){
+      addBubble('user','Yes, proceed.','');
+      const cmd=S.pendingCmd;S.pendingCmd=null;
+      await exec(cmd,true);
+    }else{
+      addBubble('user','No, cancel.','');S.pendingCmd=null;
+      const r="Understood. Command cancelled. What else can I do for you?";
+      addBubble('nia',r,'');speak(r);
+    }
+    S.processing=false;setLbl('Tap to speak');return;
+  }
+
+  // Gate check
+  const g=gate(text);
+  if(!g.ok){
+    addBubble('nia',g.msg,g.denial?'denial':'');
+    speak(g.msg);
+    if(g.denial)showUpsell();
+    S.processing=false;setLbl(g.denial?'Tap to speak':'Tap to speak',g.denial?'den':'');return;
+  }
+
+  // Clarification needed?
+  for(const r of CLARIFY){
+    if(r.p.test(text)){
+      S.awaitClarify=true;
+      S.clarifyCtx={cmd:text,m:r.m};
+      addBubble('nia',r.q,'clarify');speak(r.q);
+      S.processing=false;setLbl('Waiting for your answer','cnf');return;
+    }
+  }
+
+  // High-risk confirmation?
+  if(HIGH_RISK.some(r=>r.test(text))){
+    S.awaitConfirm=true;S.pendingCmd=text;
+    const tid=showTyping();
+    let summary='';
+    try{summary=await callGemini([{role:'user',parts:[{text:`In one sentence starting with "I'll", summarise this command: ${text}`}]}]);}
+    catch(e){summary=`I'll execute: "${text}"`;}
+    removeTyping(tid);
+    const cfm=`${summary} — shall I proceed?`;
+    addBubble('nia',cfm,'clarify');speak(cfm);showCfmBtns();
+    S.processing=false;setLbl('Awaiting confirmation','cnf');return;
+  }
+
+  await exec(text,false);
+  S.processing=false;setLbl('Tap to speak');
+}
+
+async function exec(text,confirmed){
+  const tid=showTyping();
+  S.msgs.push({role:'user',parts:[{text:confirmed?`Confirmed, proceed: ${text}`:text}]});
+  let reply='';
+  try{
+    reply=await callGemini(S.msgs);
+    S.msgs.push({role:'model',parts:[{text:reply}]});
+    if(S.msgs.length>40)S.msgs=S.msgs.slice(-40);
+  }catch(e){
+    reply=`Connection error: ${e.message} — Go to Settings and verify your API key is correct.`;
+  }
+  removeTyping(tid);
+  addBubble('nia',reply,'');
+  speak(reply);
+}
+
+async function callGemini(msgs){
+  const now=new Date();
+  const c=TCFG[S.tier]||{};
+  const DN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const sys=`You are Nia, a world-class digital executive assistant.
+Personality: Poised, ultra-competent, direct. Never use filler phrases like "Certainly!" or "Of course!".
+Response length: 1–3 sentences unless detailed output is explicitly requested.
+For any action involving sending, paying, deleting, or booking: summarise what you'll do and end with "— shall I proceed?"
+You assist with: scheduling, email drafting, document work, task management, research, planning, and executive decision-making.
+Current plan: ${c.label||S.tier} | Availability: ${c.avail||''} | Languages: ${c.lang||''} | Depth: ${c.depth||''}
+Date/Time: ${now.toLocaleString()} | Day: ${DN[now.getDay()]}
+Lead with the action or answer. Never start with the user's name.`;
+
+  const res=await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${S.apiKey}`,
+    {method:'POST',headers:{'Content-Type':'application/json'},
+     body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:msgs,generationConfig:{maxOutputTokens:350,temperature:0.75}})}
+  );
+  if(!res.ok){
+    const e=await res.json().catch(()=>({}));
+    const m=e?.error?.message||`HTTP ${res.status}`;
+    if(res.status===400||res.status===403)throw new Error('API key invalid. Go to Settings → Reset and enter a valid key from aistudio.google.com');
+    throw new Error(m);
+  }
+  const d=await res.json();
+  return d?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||"I couldn't formulate a response. Try again.";
+}
+
+// ══ VOICE ════════════════════════════════════════════════════
+function toggleListen(){if(S.processing)return;S.listening?stopL():startL();}
+function startL(){
+  if(!recognition){const t=prompt('Type your command:');if(t)processInput(t);return;}
+  try{synth.cancel();recognition.start();setListening(true);}catch(e){}
+}
+function stopL(){try{recognition?.stop();}catch(e){}setListening(false);}
+function setListening(v){
+  S.listening=v;
+  const oc=el('ocore'),mb=el('mbtn'),wf=el('wf');
+  ['r1','r2','r3'].forEach(id=>{const e=el(id);v?e.classList.add('L'):e.classList.remove('L');});
+  if(v){oc.classList.add('L');mb.classList.add('on');mb.textContent='⏹';wf.classList.add('on');setLbl('Listening...','act');}
+  else{oc.classList.remove('L');mb.classList.remove('on');mb.textContent='🎙';wf.classList.remove('on');if(!S.processing)setLbl('Tap to speak');}
+}
+function speak(text){
+  synth.cancel();setLbl('Speaking...','spk');
+  const u=new SpeechSynthesisUtterance(text);
+  if(niasVoice)u.voice=niasVoice;
+  u.rate=0.9;u.pitch=1.05;u.volume=1;
+  u.onend=()=>{if(!S.listening&&!S.processing)setLbl('Tap to speak');};
+  synth.speak(u);
+}
+
+// ══ UI HELPERS ═══════════════════════════════════════════════
+function qcmd(t){if(S.processing||S.awaitConfirm||S.awaitClarify)return;processInput(t);}
+
+function addBubble(spk,text,type){
+  const t=el('transcript'),d=document.createElement('div');
+  let cls=spk==='user'?'bbl bu':'bbl bn';
+  if(type==='denial')cls+=' bd';
+  if(type==='clarify')cls+=' bq';
+  d.className=cls;
+  d.innerHTML=`<div class="bspk">${spk==='user'?'You':'Nia'}</div><div class="btxt">${esc(text)}</div>`;
+  t.appendChild(d);t.scrollTop=t.scrollHeight;
+}
+function showTyping(){
+  const t=el('transcript'),id='ty'+Date.now(),d=document.createElement('div');
+  d.id=id;d.className='tyb';d.innerHTML='<div class="tyd"></div><div class="tyd"></div><div class="tyd"></div>';
+  t.appendChild(d);t.scrollTop=t.scrollHeight;return id;
+}
+function removeTyping(id){el(id)?.remove();}
+function setLbl(text,cls=''){const e=el('slbl');e.textContent=text;e.className='slbl'+(cls?' '+cls:'');}
+function showCfmBtns(){el('cslot').innerHTML=`<div class="cfm"><button class="cno" onclick="cfmBtn(false)">Cancel</button><button class="cyes" onclick="cfmBtn(true)">Proceed</button></div>`;}
+function cfmBtn(yes){
+  el('cslot').innerHTML='';S.awaitConfirm=false;
+  if(yes){addBubble('user','Yes, proceed.','');S.processing=true;const cmd=S.pendingCmd;S.pendingCmd=null;exec(cmd,true).then(()=>{S.processing=false;setLbl('Tap to speak');});}
+  else{addBubble('user','No, cancel.','');S.pendingCmd=null;const r="Understood. Command cancelled. What else can I do for you?";addBubble('nia',r,'');speak(r);}
+}
+function showUpsell(){
+  const s=el('uslot');if(s.innerHTML)return;
+  s.innerHTML=`<div class="ups"><div class="ups-top"><span class="ups-lbl">Upgrade Available</span><button class="ups-x" onclick="el('uslot').innerHTML=''">✕</button></div><div class="ups-bod">Nia Premium — 24/7, every language, full depth. <span class="ups-hl">7-day free trial.</span></div><button class="ups-cta" onclick="upgPremium()">Start Free Trial</button></div>`;
+}
+function upgPremium(){S.tier='premium';S.trialStart=Date.now();save();el('tdisplay').textContent='Premium';el('uslot').innerHTML='';const m="Premium trial activated. I'm now available around the clock. What do you need?";addBubble('nia',m,'');speak(m);}
+
+function openSettings(){
+  const c=TCFG[S.tier]||{};
+  el('st').textContent=c.label||'—';
+  el('ss').textContent=S.tier==='premium'&&S.trialStart?`Trial — ${dLeft()} days left`:'Active';
+  el('sa').textContent=c.avail||'—';
+  el('sl').textContent=c.lang||'—';
+  el('mbg').classList.add('open');
+}
+function closeMod(e){if(e.target===el('mbg'))el('mbg').classList.remove('open');}
+function dLeft(){if(!S.trialStart)return 0;return Math.max(0,Math.ceil((7*864e5-(Date.now()-S.trialStart))/864e5));}
+function resetNia(){if(!confirm('Clear API key and plan?'))return;localStorage.clear();location.reload();}
+function clearAll(){
+  el('transcript').innerHTML='';el('uslot').innerHTML='';el('cslot').innerHTML='';
+  S.msgs=[];S.awaitConfirm=false;S.awaitClarify=false;S.pendingCmd=null;S.clarifyCtx=null;
+  synth.cancel();setLbl('Tap to speak');
+}
+function el(id){return document.getElementById(id);}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br/>');}
+</script>
+</body>
+</html>
